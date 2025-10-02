@@ -5,7 +5,9 @@ const FileUpload = ({setFile}) => {
         const fileUpload = await e.target.files[0].arrayBuffer();
         const file={
             type: e.target.files[0].type,
-            file:Buffer.from(fileUpload).toString('base64')
+            file:Buffer.from(fileUpload).toString('base64'),
+            imageUrl : e.target.files[0].type.includes("pdf")?"/document-icon.png": 
+            URL.createObjectURL(e.target.files[0])
         }
         setFile(file);
     }

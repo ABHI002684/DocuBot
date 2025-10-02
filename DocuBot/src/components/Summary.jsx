@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { GoogleGenAI } from "@google/genai";
 import Loader from './Loader';
 
-
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
 const Summary = ({ file }) => {
     
