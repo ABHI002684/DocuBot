@@ -8,6 +8,7 @@
     "start": "node server.js"
   },
   "author": "Abhishek",
+  "type":"module",
   "license": "ISC",
   "dependencies": {
     "@google/genai": "^1.23.0",
