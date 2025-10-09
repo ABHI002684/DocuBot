@@ -61,7 +61,7 @@ const Chat = ({file}) => {
             ))
         }
         </div>:''
-        }: ''
+        }
       <div className="input-area">
         <input type="text"
               value={input}
@@ -74,28 +74,4 @@ const Chat = ({file}) => {
   )
 }
 
-export default Chat
-
-
-try {
-            const contents = [
-                { text: `Summarize this document in one short paragraph
-                    (less than 100 words). use just plaintext with no markdown
-                    or HTML tags` },
-                {
-                    inlineData: {
-                        mimeType: file.type,
-                        data: file.file
-                    }
-                }
-            ];
-
-            const response = await ai.models.generateContent({
-                model: "gemini-2.5-flash",
-                contents: contents
-            });
-            setStatus("success");
-            setSummary(response.text);
-        } catch (err) {
-            setStatus("error");
-        }
+export default Chat;
