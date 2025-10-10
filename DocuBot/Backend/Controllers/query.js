@@ -10,8 +10,8 @@ const ai = new GoogleGenAI({});
 // function to transform the follow up question into a standalone question
 const transformQuery = async (query, history = []) => {
   const contents = history
-    .filter(msg => msg.text)
-    .map(msg => ({
+    .filter((msg) => msg.text)
+    .map((msg) => ({
       role: msg.role,
       parts: [{ type: "text", text: msg.text }],
     }));
@@ -22,7 +22,7 @@ const transformQuery = async (query, history = []) => {
   });
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash",
     systemInstruction: `
       You are a query rewriting expert. 
       Based on the provided chat history, rephrase the "Follow Up user Question" into a complete, standalone question that can be understood without the chat history. 
@@ -38,10 +38,9 @@ const queryResult = async (req, res) => {
   try {
     const { query, history = [] } = req.body;
 
-    
     const rewrittenQuery = await transformQuery(query, history);
 
-// Intializing the Embedding model
+    // Intializing the Embedding model
     const embeddings = new GoogleGenerativeAIEmbeddings({
       apiKey: process.env.GEMINI_API_KEY,
       model: "text-embedding-004",
@@ -58,57 +57,40 @@ const queryResult = async (req, res) => {
     });
 
     const context = searchResults.matches
-      .map(m => m.metadata.text)
+      .map((m) => m.metadata.text)
       .join("\n\n---\n\n");
 
-    //  Build contents for final DocuBot response
-    const contents = history
-      .filter(msg => msg.text)
-      .map(msg => ({
-        role: msg.role,
-        parts: [{ type: "text", text: msg.text }],
-      }));
-
-    contents.push({
-      role: "user",
-      parts: [{ type: "text", text: rewrittenQuery }],
-    });
-
+    if (!context || context.trim() === "") {
+      const fallbackAnswer =
+        "I could not find the answer in the provided document.";
+      history.push({ role: "model", text: fallbackAnswer });
+      return res.json({ result: fallbackAnswer, history });
+    }
+    
+    
+    
     // Generate response using Gemini
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
       systemInstruction: `
-        You are DocuBot, an intelligent assistant designed to help users understand and interact with the contents of uploaded PDF documents.
+You are DocuBot, an AI assistant. Answer the user query using ONLY the following PDF context:${context}.
 
-You will be given:
+If the answer is not in the document, respond with: "I could not find the answer in the provided document."
 
-The content extracted from one or more PDFs (context).
-
-A user query related to that content.
-
-Your task is to answer the user's question based ONLY on the information present in the provided PDF content.
-
-If the answer is not explicitly found or inferred from the document, respond with:
-
-"I could not find the answer in the provided document."
-
-Guidelines:
-
-Keep your answers concise, factual, and easy to understand.
-
-Do not make assumptions or add information not supported by the document.
-
-If relevant, quote short portions of the document to support your answer.
-
-Maintain a professional and educational tone.
-Do not use any prior knowledge or make assumptions. Use only the text from the context provided.
-      `,
-      contents,
+Give only to the point answers (max 10 words), like a short chatbot response.
+only the give the answer that has been asked, do not add any extra information.
+Do not assume or add any external knowledge.
+  `,
+      contents: [
+        {
+          role: "user",
+          parts: [{ type: "text", text: rewrittenQuery }],
+        },
+      ],
     });
-
     const answerText = response.text;
-
-    // 6️⃣ Update history
+    console.log("Answer:", answerText);
+    // Update history
     history.push({ role: "model", text: answerText });
 
     res.json({ result: answerText, history });

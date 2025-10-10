@@ -17,12 +17,18 @@
     "@langchain/pinecone": "^0.2.0",
     "@langchain/textsplitters": "^0.1.0",
     "@pinecone-database/pinecone": "^5.1.2",
+    "@progress/kendo-react-dropdowns": "^12.1.0",
+    "@progress/kendo-react-indicators": "^12.1.0",
+    "@progress/kendo-react-labels": "^12.1.0",
+    "@uiball/loaders": "^1.3.1",
+    "axios": "^1.12.2",
     "buffer": "^6.0.3",
     "dotenv": "^17.2.3",
     "pdf-parse": "^1.1.1",
     "pdfjs-dist": "^5.4.296",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-loading-indicators": "^1.0.1",
     "readline-sync": "^1.4.10"
   },
   "devDependencies": {
