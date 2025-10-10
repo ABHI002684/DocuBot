@@ -5,70 +5,80 @@ import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { Pinecone } from "@pinecone-database/pinecone";
 import { GoogleGenAI } from "@google/genai";
 
-const transformQuery= async(query, history)=> {
-  history.push({
+const ai = new GoogleGenAI({});
+
+// function to transform the follow up question into a standalone question
+const transformQuery = async (query, history = []) => {
+  const contents = history
+    .filter(msg => msg.text)
+    .map(msg => ({
+      role: msg.role,
+      parts: [{ type: "text", text: msg.text }],
+    }));
+
+  contents.push({
     role: "user",
-    parts: [{ text: query }],
+    parts: [{ type: "text", text: query }],
   });
 
   const response = await ai.models.generateContent({
     model: "gemini-2.0-flash",
-    contents: History,
-    config: {
-      systemInstruction: `You are a query rewriting expert. Based on the provided 
-      chat history, rephrase the "Follow Up user Question" into a complete, 
-      standalone question that can be understood without the chat history. 
-      Only output the rewritten question and nothing else.
-      `,
-    },
+    systemInstruction: `
+      You are a query rewriting expert. 
+      Based on the provided chat history, rephrase the "Follow Up user Question" into a complete, standalone question that can be understood without the chat history. 
+      Only output the rewritten question.
+    `,
+    contents,
   });
 
-  history.pop();
-
   return response.text;
-}
+};
+
 const queryResult = async (req, res) => {
   try {
-    const { query, history } = req.body;
-    const queries = await transformQuery(query,history);
+    const { query, history = [] } = req.body;
 
-    //convert the user query into embedding (vector)
+    
+    const rewrittenQuery = await transformQuery(query, history);
+
+// Intializing the Embedding model
     const embeddings = new GoogleGenerativeAIEmbeddings({
       apiKey: process.env.GEMINI_API_KEY,
       model: "text-embedding-004",
     });
+    const queryVector = await embeddings.embedQuery(rewrittenQuery);
 
-    const queryVector = await embeddings.embedQuery(queries);
-
-    //Search Relevant document into vector DB
-
+    // Search relevant documents in Pinecone
     const pinecone = new Pinecone();
     const pineconeIndex = pinecone.Index(process.env.PINECONE_INDEX_NAME);
-
     const searchResults = await pineconeIndex.query({
       topK: 10,
       vector: queryVector,
       includeMetadata: true,
     });
 
-    //create the context for the LLM model
     const context = searchResults.matches
-      .map((match) => match.metadata.text)
+      .map(m => m.metadata.text)
       .join("\n\n---\n\n");
 
-    // Query + Context to LLM
-    const ai = new GoogleGenAI({});
+    //  Build contents for final DocuBot response
+    const contents = history
+      .filter(msg => msg.text)
+      .map(msg => ({
+        role: msg.role,
+        parts: [{ type: "text", text: msg.text }],
+      }));
 
-    history.push({
+    contents.push({
       role: "user",
-      parts: [{ text: queries }],
+      parts: [{ type: "text", text: rewrittenQuery }],
     });
 
+    // Generate response using Gemini
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
-      contents: history,
-      config: {
-        systemInstruction: `You are DocuBot, an intelligent assistant designed to help users understand and interact with the contents of uploaded PDF documents.
+      systemInstruction: `
+        You are DocuBot, an intelligent assistant designed to help users understand and interact with the contents of uploaded PDF documents.
 
 You will be given:
 
@@ -91,17 +101,20 @@ Do not make assumptions or add information not supported by the document.
 If relevant, quote short portions of the document to support your answer.
 
 Maintain a professional and educational tone.
-      
-      Context: ${context}
+Do not use any prior knowledge or make assumptions. Use only the text from the context provided.
       `,
-      },
+      contents,
     });
 
-    history.push({
-      role: "model",
-      parts: [{ text: response.text }],
-    });
+    const answerText = response.text;
+
+    // 6️⃣ Update history
+    history.push({ role: "model", text: answerText });
+
+    res.json({ result: answerText, history });
   } catch (err) {
-    return res.json({ message: err.message });
+    res.json({ error: err.message });
   }
 };
+
+export default queryResult;
