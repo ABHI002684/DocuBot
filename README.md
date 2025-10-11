@@ -1,30 +1,70 @@
-🧠DocuBot – Chat with Your PDFs
+# **DocuBot**
 
-DocuBot is an intelligent PDF chat application that allows users to interact with their documents using natural language. 
-Upload any PDF and start asking questions — DocuBot extracts context, understands your queries, and gives accurate, conversational answers powered by AI.
+**DocuBot** is an AI-powered document assistant that helps users interact with documents, extract information, and get answers using cutting-edge technologies like LangChain, Pinecone, and Google Gemini API.
 
-🚀 Features
+---
 
-📂 Upload PDFs – Easily upload one or multiple PDF files.
+## **🚀 Features**
 
-💬 Chat with Documents – Ask questions and get instant answers based on the content.
+- Upload PDFs and documents for AI processing
+- Ask questions and get answers based on document content
+- Provides AI-powered insights from a single document using Retrieval-Augmented Generation (RAG).
+- Real-time interaction with documents through a chatbot interface
+- Backend powered by Node.js and Express.js
+- Persistent vector storage with Pinecone
+- AI-powered embeddings using Google Generative AI
 
-🧩 Context-Aware Responses – The AI maintains context across the conversation.
+---
 
-⚡ Fast and Efficient – Processes and retrieves relevant document chunks quickly.
+## **🛠 Tech Stack**
 
-🔒 Secure – Files and chats are processed locally or securely stored.
+**Frontend:** React.js  
+**Backend:** Node.js, Express.js  
+**Vector Store:** Pinecone  
+**AI & NLP:** LangChain, Google Gemini API
+
+---
+
+## **⚡ Installation**
+
+**Clone the repository**
+
+git clone https://github.com/ABHI002684/docuBot.git
+cd docuBot
+
+## ** Install Dependencies**
+
+### **Backend**
+
+cd backend
+npm install
+
+### **Frontend**
+cd frontend
+npm install
+
+### Setup Environment Variables
+
+### Backend
+Create a .env file in the backend folder:
+PORT="your_port"
+PINECONE_API_KEY=your_pinecone_api_key
+GOOGLE_API_KEY=your_google_gemini_api_key
+PINECONE_ENVIRONMENT="your_pinecone_environment"
+PINECONE_INDEX_NAME= "your_pinecone_index"
+
+### Frontend
+Create a .env file in the backend folder:
+GOOGLE_API_KEY=your_google_gemini_api_key
+
+### Run the Application
+
+### Backend
+npm run dev
+
+### Frontend
+npm run dev
+
+Then open 👉 http://localhost:5173
 
 
-
-🧩 Architecture Overview
-
-User uploads a PDF → Extracts text using a PDF parser.
-
-Chunking and Embedding → Document text is split and embedded into vector representations.
-
-User asks a question → The query is also embedded.
-
-Semantic Search → The most relevant chunks are retrieved using similarity search.
-
-Response Generation → The LLM generates an answer using retrieved context.
