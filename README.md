@@ -29,18 +29,18 @@
 
 **Clone the repository**
 
-git clone https://github.com/ABHI002684/docuBot.git
+git clone https://github.com/ABHI002684/docuBot.git  
 cd docuBot
 
 ## ** Install Dependencies**
 
 ### **Backend**
 
-cd backend
+cd backend  
 npm install
 
 ### **Frontend**
-cd frontend
+cd frontend  
 npm install
 
 ### Setup Environment Variables
