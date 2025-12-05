@@ -17,7 +17,7 @@ const Chat = ({ file }) => {
 
 
       try {
-        const response = await axios.post("http://localhost:5000/api/query", {
+        const response = await axios.post("https://docubot-punu.onrender.com/api/query", {
           query: input,
           history: messages,
         });

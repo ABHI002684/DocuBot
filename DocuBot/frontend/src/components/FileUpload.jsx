@@ -15,7 +15,7 @@ const FileUpload = ({ setFile }) => {
       formData.append("file", uploadedFile);
 
       const response = await axios.post(
-        "http://localhost:5000/api/embed-pdf", 
+        "https://docubot-punu.onrender.com/api/embed-pdf", 
         formData,
         {
           headers: {
